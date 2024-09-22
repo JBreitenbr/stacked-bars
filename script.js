@@ -13,8 +13,8 @@ var svg = d3.select("#my_dataviz")
           "translate(" + margin.left + "," + margin.top + ")");
 
 // Parse the Data
-d3.csv("https://raw.githubusercontent.com/JBreitenbr/psychic-meme/refs/heads/main/res.csv", function(data) {
-  const filt = data.filter(d => d.country === "India");
+d3.csv("https://raw.githubusercontent.com/JBreitenbr/psychic-meme/refs/heads/main/bars.csv", function(data) {
+  const filt = data.filter(d => d.country === "Germany");
   // List of subgroups = header of the csv files = soil condition here
   var subgroups = data.columns.slice(3)
   var sg2=data.columns.slice(2,3)
@@ -54,7 +54,32 @@ d3.csv("https://raw.githubusercontent.com/JBreitenbr/psychic-meme/refs/heads/mai
     sD2.push(sD2_[0][i][1])
   }
   console.log(sD2)
- 
+ var tooltip = d3.select("#my_dataviz")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "1px")
+    .style("border-radius", "5px")
+    .style("padding", "10px")
+  // Three function that change the tooltip when user hover / move / leave a cell
+  var mouseover = function(d) {
+    var subgroupName = d3.select(this.parentNode).datum().key;
+    var subgroupValue = d.data[subgroupName];
+    tooltip
+        .html("subgroup: " + subgroupName + "<br>" + "Value: " + subgroupValue)
+        .style("opacity", 1)
+  }
+  var mousemove = function(d) {
+    tooltip
+      .style("left", (d3.mouse(this)[0]+90) + "px") // It is important to put the +90: other wise the tooltip is exactly where the point is an it creates a weird effect
+      .style("top", (d3.mouse(this)[1]) + "px")
+  }
+  var mouseleave = function(d) {
+    tooltip
+      .style("opacity", 0)
+  }
 for(let i=0;i<10;i++) {
   svg.append("text").attr("x",x(2015+i)).attr("y",y(sD2[i])-3).text(sD2[i].toFixed(3)).style("font-size","10px");
 }
@@ -73,7 +98,10 @@ for(let i=0;i<10;i++) {
         .attr("x", function(d) { return x(d.data.year); })
         .attr("y", function(d) { return y(d[1]); })
         .attr("height", function(d) { return y(d[0]) - y(d[1]); })
-       .attr("width",x.bandwidth())
+       .attr("width",x.bandwidth()).attr("stroke", "grey")
+      .on("mouseover", mouseover)
+      .on("mousemove", mousemove)
+      .on("mouseleave", mouseleave)
   
 })
 
